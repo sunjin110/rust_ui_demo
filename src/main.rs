@@ -40,7 +40,17 @@ impl iced::Application for GUI {
         String::from("DEMO")
     }
 
-    fn update(&mut self, _message: Self::Message) -> iced::Command<Self::Message> {
+    fn update(&mut self, message: Self::Message) -> iced::Command<Self::Message> {
+        match message {
+            Message::Start => {
+                self.tick_state = TickState::Ticking;
+            }
+            Message::Stop => {
+                self.tick_state = TickState::Stopped;
+            }
+            Message::Reset => {}
+        }
+
         iced::Command::none()
     }
 
@@ -65,7 +75,6 @@ impl iced::Application for GUI {
         };
 
         
-
         // init widgets
         let tick_text = iced::Text::new(duration_text)
             .font(iced::Font::Default)
