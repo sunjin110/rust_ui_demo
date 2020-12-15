@@ -1,5 +1,10 @@
 use iced::Application;
 
+const FPS: u64 = 30;
+const MILLISEC: u64 = 1000;
+const MINUTE: u64 = 60;
+const HOUR: u64 = 60 * MINUTE;
+
 struct GUI {
     tick_state: TickState,
     start_stop_button_state: iced::button::State,
@@ -12,6 +17,7 @@ pub enum Message {
     Start, // 時間の測定を開始するメッセージ
     Stop,  // 時間の測定を停止するメッセージ
     Reset, // 測定した時間をリセットするメッセージ
+    Update, 
 }
 
 // 状態(シーン的な？)
@@ -20,8 +26,39 @@ pub enum TickState {
     Ticking,
 }
 
+// timer
+pub struct Timer {
+    duration: std::time::Duration,
+}
+
+impl Timer {
+    fn new(duration: std::time::Duration) -> Timer {
+        Timer { duration: duration}
+    }
+}
+
+impl <H, E> iced_native::subscription::Recipe<H, E> for Timer where H: std::hash::Hasher {
+    type Output = std::time::Instant;
+
+    fn hash(&self, state: &mut H) {
+        use std::hash::Hash;
+        std::any::TypeId::of::<Self>().hash(state);
+        self.duration.hash(state);
+    }
+
+    fn stream(
+        self: Box<Self>,
+        _input: iced_futures::futures::stream::BoxStream<'static, E>,
+    ) -> iced_futures::futures::stream::BoxStream<'static, Self::Output> {
+        use iced_futures::futures::stream::StreamExt;
+        async_std::stream::interval(self.duration)
+            .map(|_| std::time::Instant::now())
+            .boxed()
+    }
+}
+
 impl iced::Application for GUI {
-    type Executor = iced::executor::Null;
+    type Executor = iced::executor::Default;
     type Message = Message;
     type Flags = ();
 
@@ -109,6 +146,11 @@ impl iced::Application for GUI {
         .height(iced::Length::Fill)
         .align_items(iced::Align::Center)
         .into()
+    }
+
+    fn subscription(&self) -> iced::Subscription<Message> {
+        let timer = Timer::new(std::time::Duration::from_millis(MILLISEC / FPS));
+        iced::Subscription::from_recipe(timer).map(|_| Message::Update)
     }
 }
 
