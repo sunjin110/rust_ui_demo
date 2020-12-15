@@ -68,5 +68,9 @@ impl iced::Application for GUI {
 }
 
 fn main() {
-    GUI::run(iced::Settings::default());
+
+    // 画面サイズを変更
+    let mut settings = iced::Settings::default();
+    settings.window.size = (400u32, 120u32);
+    GUI::run(settings);
 }
