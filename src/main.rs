@@ -1,18 +1,34 @@
 use iced::Application;
 
 struct GUI {
+    tick_state: TickState,
     start_stop_button_state: iced::button::State,
     reset_button_state: iced::button::State,
 }
 
+// イベント送信用のメッセージ
+#[derive(Debug, Clone)]
+pub enum Message {
+    Start, // 時間の測定を開始するメッセージ
+    Stop, // 時間の測定を停止するメッセージ
+    Reset, // 測定した時間をリセットするメッセージ
+}
+
+// 状態(シーン的な？)
+pub enum TickState {
+    Stopped,
+    Ticking,
+}
+
 impl iced::Application for GUI {
     type Executor = iced::executor::Null;
-    type Message = ();
+    type Message = Message;
     type Flags = ();
 
     fn new(_flags: ()) -> (GUI, iced::Command<Self::Message>) {
         (
             GUI {
+                tick_state: TickState::Stopped,
                 start_stop_button_state: iced::button::State::new(),
                 reset_button_state: iced::button::State::new(),
             },
