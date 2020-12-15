@@ -10,7 +10,7 @@ struct GUI {
 #[derive(Debug, Clone)]
 pub enum Message {
     Start, // 時間の測定を開始するメッセージ
-    Stop, // 時間の測定を停止するメッセージ
+    Stop,  // 時間の測定を停止するメッセージ
     Reset, // 測定した時間をリセットするメッセージ
 }
 
@@ -45,19 +45,38 @@ impl iced::Application for GUI {
     }
 
     fn view(&mut self) -> iced::Element<Self::Message> {
+        // prepare duration text
+        let duration_text = "00:00:00:00";
+
+        // prepare start/stop text
+        let start_stop_text = match self.tick_state {
+            TickState::Stopped => iced::Text::new("Start")
+                .horizontal_alignment(iced::HorizontalAlignment::Center)
+                .font(iced::Font::Default),
+            TickState::Ticking => iced::Text::new("Stop")
+                .horizontal_alignment(iced::HorizontalAlignment::Center)
+                .font(iced::Font::Default),
+        };
+
+        // prepare start/stop message on button press
+        let start_stop_message = match self.tick_state {
+            TickState::Stopped => Message::Start,
+            TickState::Ticking => Message::Stop,
+        };
+
+        
 
         // init widgets
-        let tick_text = iced::Text::new("00:00:00:00")
+        let tick_text = iced::Text::new(duration_text)
             .font(iced::Font::Default)
             .size(60);
 
         let start_stop_button = iced::Button::new(
             &mut self.start_stop_button_state,
-            iced::Text::new("Start")
-                .horizontal_alignment(iced::HorizontalAlignment::Center)
-                .font(iced::Font::Default),
+            start_stop_text,
         )
-        .min_width(80);
+        .min_width(80)
+        .on_press(start_stop_message);
 
         let reset_button = iced::Button::new(
             &mut self.reset_button_state,
@@ -65,7 +84,8 @@ impl iced::Application for GUI {
                 .horizontal_alignment(iced::HorizontalAlignment::Center)
                 .font(iced::Font::Default),
         )
-        .min_width(80);
+        .min_width(80)
+        .on_press(Message::Reset);
 
         // prepare column
         iced::Column::new().push(tick_text).push(
@@ -84,7 +104,6 @@ impl iced::Application for GUI {
 }
 
 fn main() {
-
     // 画面サイズを変更
     let mut settings = iced::Settings::default();
     settings.window.size = (400u32, 120u32);
