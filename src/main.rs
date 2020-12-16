@@ -6,6 +6,8 @@ const MINUTE: u64 = 60;
 const HOUR: u64 = 60 * MINUTE;
 
 struct GUI {
+    last_update: std::time::Instant,
+    total_duration: std::time::Duration,
     tick_state: TickState,
     start_stop_button_state: iced::button::State,
     reset_button_state: iced::button::State,
@@ -86,6 +88,7 @@ impl iced::Application for GUI {
                 self.tick_state = TickState::Stopped;
             }
             Message::Reset => {}
+            Message::Update => {}
         }
 
         iced::Command::none()
